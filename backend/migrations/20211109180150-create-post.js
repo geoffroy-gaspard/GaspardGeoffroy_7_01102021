@@ -18,7 +18,8 @@ module.exports = {
         type: Sequelize.TEXT
       },
       attachment: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       createdAt: {
         allowNull: false,
