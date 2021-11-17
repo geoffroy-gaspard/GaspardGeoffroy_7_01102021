@@ -2,29 +2,80 @@
     <div class="posts">
         <div :key="index" v-for="(posts, index) in posts" class="allPosts card text-center">
             <h3 class="post_card_title card-header">{{ posts.title }}</h3>
-            <div class="attachment card-body"><img class="attachment_link" :src="posts.attachment" alt="post image"></div>
-            <p class="post_card_content card-text">{{ posts.content }}</p>
-            <div class="card-footer text-muted">{{ posts.createdAt }}</div>
+            <div class="attachment card-body"><img v-if="posts.attachment" class="attachment_link" :src="'http://localhost:3000/uploads/' + posts.attachment" alt="post image"></div>
+            <p v-if="posts.content" class="post_card_content card-text">{{ posts.content }}</p>
+            <div class="form-row">
+            <comment>
+                <template v-slot:text>
+                    <form @submit="postComment" method="post" class="form-group">
+                        <textarea v-model="comments.content" class="form-row__input form-control comment-section" type="text" placeholder="Publier un commentaire"  rows="3"/>
+                    </form>
+                </template>
+            <template v-slot:like>
+                <div class="card-footer comment_section_like">
+                <div class="text-muted">Créé le {{ posts.createdAt }}</div>
+                <button @click="postComment()" type="submit" class="btn btn-secondary">Publier le commentaire</button>
+                <p class="post_card_content">0 likes</p>
+                <button class="btn like-btn btn-primary"><div class="icone"><font-awesome-icon icon="thumbs-up"/></div></button>
+                </div>
+            </template>
+            </comment>
+            <div>
+            <div :key="index" v-for="(comments, index) in comments">
+                <p class="post_card_content" v-if="posts.id == comments.post_id">{{ comments.content }}</p>
+            </div>
+            <button v-if="posts == null" class="btn btn-outline-primary">Publier</button>
+            </div>
+        </div>
         </div>
     </div>
 </template>
 
 <script>
     import axios from 'axios';
+    import comment from '@/components/comment.vue'
     export default {
         name: 'post',
+        components: {
+            comment,
+        },
         data() {
             return {
-                posts: null,
+                posts: {
+                    title: null,
+                    content: null,
+                    attachment: null,
+                },
+                comments: {
+                    content: null,
+                    user_id: null,
+                    postId: null
+                },
             }
         },
-        mounted() {
+        created() {
             axios
                 .get("http://localhost:3000/posts")
                 .then((res) => {
                     this.posts = res.data;
-                    console.log(this.posts)
+                    console.log(this.posts);
                 });
+        },
+        mounted: function() {  
+            axios
+                .get('http://localhost:3000/comments')
+                .then((res) => {
+                this.comments = res.data;
+                console.log(this.comments);
+            });
+        },
+        methods: {
+            postComment() {
+                axios.post('http://localhost:3000/comments', this.comments)
+                .then((result) => {
+                    console.warn(result)
+                })
+            }
         }
     }
 </script>
@@ -56,8 +107,6 @@
         width: auto;
         height: 150px;
         max-height: 60%;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
     }
 
     .attachment_link {
@@ -75,5 +124,41 @@
 
     .post_card_creation {
         font-size: 9px;
+    }
+    .comment-section {
+        width: 100%;
+        height: 100px;
+        resize: none;
+    }
+    .comment_section_like {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .like-btn{
+        height: 50px;
+        width: 50px;
+        border: 3px solid #DEEBFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 4rem/4rem;
+        background-color: #277ceb;
+        color: #DEEBFF;
+        align-self: flex-end;
+    }
+    .icone {
+    height: 30px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 40px/40px;
+    background-color: #277ceb;
+    color: #DEEBFF;
+    }
+    .like-btn:hover > .icone {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
     }
 </style>

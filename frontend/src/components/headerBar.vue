@@ -2,10 +2,11 @@
   <div class="header">
     <div class="title">
     <img class="logo" alt="Groupomania logo" src="../assets/icon.png">
-    <h1>{{ msg }}</h1>
+    <h1>Groupomania</h1>
     </div>
     <div class="title nav">
-      <router-link class="userI" to="/Login">Connexion / Inscription</router-link>
+      <router-link class="userI" v-if="isHomePage == true" to="/Login">{{ msg }}</router-link>
+      <router-link class="userI" v-else to="/">{{ msg }}</router-link>
     </div>
   </div>
 </template>
@@ -15,7 +16,19 @@ export default {
   name: 'headerBar',
   props: {
     msg: String
+  },
+  watch: {
+  $route: {
+     immediate: true,
+     handler() {
+         if(this.$route.path == '/') {
+           this.isHomePage = true;
+         } else {
+            this.isHomePage = false;
+         }
+     }
   }
+}
 }
 </script>
 

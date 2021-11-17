@@ -1,11 +1,28 @@
+const Validator = require('fastest-validator');
 const models = require('../models');
 
 function save (req, res) {
     const post = {
-        user_id: req.body.user_id,
+        user_id: req.userData.id,
         title: req.body.title,
         content: req.body.content,
         attachment: req.body.image_url
+    }
+
+    const schema = {
+        title: { type:'string', optional: false, max: '100'},
+        content: { type:'string', optional:true, max:'500'},
+        attachment: { type:'string', optional:true, max:'500'}
+    }
+
+    const v = new Validator();
+    const validationResponse = v.validate(post, schema);
+
+    if(validationResponse !== true || (req.body.content == null && req.body.image_url == null)) {
+        return res.status(400).json({
+            message: 'La validation a échoué',
+            errors: validationResponse
+        });
     }
 
     models.Post.create(post).then(result => {
@@ -57,7 +74,23 @@ function update (req, res){
         attachment: req.body.image_url
     }
 
-    const user_id = 1;
+    const user_id = req.userData.id;
+
+    const schema = {
+        title: { type:'string', optional: false, max: '100'},
+        content: { type:'string', optional:true, max:'500'},
+        attachment: { type:'string', optional:true, max:'500'}
+    }
+
+    const v = new Validator();
+    const validationResponse = v.validate(updatedPost, schema);
+
+    if(validationResponse !== true || (req.body.content == null && req.body.image_url == null)) {
+        return res.status(400).json({
+            message: 'La validation a échoué',
+            errors: validationResponse
+        });
+    }
 
     models.Post.update(updatedPost, {where: {id:id, user_id:user_id}}).then(result => {
         res.status(200).json({
@@ -74,7 +107,7 @@ function update (req, res){
 
 function destroy(req, res){
     const id = req.params.id;
-    const user_id = 1;
+    const user_id = req.userData.id;
 
     models.Post.destroy({where: {id:id, user_id:user_id}}).then(result => {
         res.status(200).json({
